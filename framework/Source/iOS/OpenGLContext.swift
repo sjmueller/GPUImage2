@@ -5,7 +5,7 @@ import UIKit
 var imageProcessingShareGroup:EAGLSharegroup? = nil
 
 public class OpenGLContext: SerialDispatch {
-    lazy var framebufferCache:FramebufferCache = {
+    public lazy var framebufferCache:FramebufferCache = {
         return FramebufferCache(context:self)
     }()
     var shaderCache:[String:ShaderProgram] = [:]
@@ -18,12 +18,11 @@ public class OpenGLContext: SerialDispatch {
         return crashOnShaderCompileFailure("OpenGLContext"){return try self.programForVertexShader(OneInputVertexShader, fragmentShader:PassthroughFragmentShader)}
     }()
 
-    lazy var coreVideoTextureCache:CVOpenGLESTextureCache = {
+    public lazy var coreVideoTextureCache:CVOpenGLESTextureCache = {
         var newTextureCache:CVOpenGLESTextureCache? = nil
         let err = CVOpenGLESTextureCacheCreate(kCFAllocatorDefault, nil, self.context, nil, &newTextureCache)
         return newTextureCache!
     }()
-    
     
     public let serialDispatchQueue:DispatchQueue = DispatchQueue(label:"com.sunsetlakesoftware.GPUImage.processingQueue", attributes: [])
     public let dispatchQueueKey = DispatchSpecificKey<Int>()
@@ -73,7 +72,7 @@ public class OpenGLContext: SerialDispatch {
     // MARK: -
     // MARK: Device capabilities
     
-    func supportsTextureCaches() -> Bool {
+    public func supportsTextureCaches() -> Bool {
 #if (arch(i386) || arch(x86_64)) && os(iOS)
         return false // Simulator glitches out on use of texture caches
 #else
