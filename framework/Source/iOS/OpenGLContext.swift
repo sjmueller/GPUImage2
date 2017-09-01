@@ -13,8 +13,8 @@ public class OpenGLContext: SerialDispatch {
     var textureVBOs:[Rotation:GLuint] = [:]
 
     let context:EAGLContext
-    
-    lazy var passthroughShader:ShaderProgram = {
+
+    public lazy var passthroughShader:ShaderProgram = {
         return crashOnShaderCompileFailure("OpenGLContext"){return try self.programForVertexShader(OneInputVertexShader, fragmentShader:PassthroughFragmentShader)}
     }()
 
@@ -23,55 +23,55 @@ public class OpenGLContext: SerialDispatch {
         let err = CVOpenGLESTextureCacheCreate(kCFAllocatorDefault, nil, self.context, nil, &newTextureCache)
         return newTextureCache!
     }()
-    
+
     public let serialDispatchQueue:DispatchQueue = DispatchQueue(label:"com.sunsetlakesoftware.GPUImage.processingQueue", attributes: [])
     public let dispatchQueueKey = DispatchSpecificKey<Int>()
-    
+
     // MARK: -
     // MARK: Initialization and teardown
 
     init() {
         serialDispatchQueue.setSpecific(key:dispatchQueueKey, value:81)
-        
+
         let generatedContext:EAGLContext?
         if let shareGroup = imageProcessingShareGroup {
             generatedContext = EAGLContext(api:.openGLES2, sharegroup:shareGroup)
         } else {
             generatedContext = EAGLContext(api:.openGLES2)
         }
-        
+
         guard let concreteGeneratedContext = generatedContext else {
             fatalError("Unable to create an OpenGL ES 2.0 context. The GPUImage framework requires OpenGL ES 2.0 support to work.")
         }
-        
+
         self.context = concreteGeneratedContext
         EAGLContext.setCurrent(concreteGeneratedContext)
-        
+
         standardImageVBO = generateVBO(for:standardImageVertices)
         generateTextureVBOs()
 
         glDisable(GLenum(GL_DEPTH_TEST))
         glEnable(GLenum(GL_TEXTURE_2D))
     }
-    
+
     // MARK: -
     // MARK: Rendering
-    
+
     public func makeCurrentContext() {
         if (EAGLContext.current() != self.context)
         {
             EAGLContext.setCurrent(self.context)
         }
     }
-    
+
     func presentBufferForDisplay() {
         self.context.presentRenderbuffer(Int(GL_RENDERBUFFER))
     }
-    
-    
+
+
     // MARK: -
     // MARK: Device capabilities
-    
+
     public func supportsTextureCaches() -> Bool {
 #if (arch(i386) || arch(x86_64)) && os(iOS)
         return false // Simulator glitches out on use of texture caches
@@ -79,7 +79,7 @@ public class OpenGLContext: SerialDispatch {
         return true // Every iOS version and device that can run Swift can handle texture caches
 #endif
     }
-    
+
     public var maximumTextureSizeForThisDevice:GLint {get { return _maximumTextureSizeForThisDevice } }
     private lazy var _maximumTextureSizeForThisDevice:GLint = {
         return self.openGLDeviceSettingForOption(GL_MAX_TEXTURE_SIZE)
