@@ -32,7 +32,7 @@ public enum FramebufferTimingStyle {
         }
     }
     
-    var timestamp:Timestamp? {
+    public var timestamp:Timestamp? {
         get {
             switch self {
                 case .stillImage: return nil
